@@ -84,10 +84,68 @@
 <script>
 // Mock database
 let tasks = [];
+let BASE_URL = 'http://127.0.0.1:8000/api';
 
-function displayTasks() {
+async function getTasksAPI() {
+    const response = await fetch(`${BASE_URL}/tasks/`);
+    const data = await response.json();
+    return data
+
+    
+}
+
+async function getOneTaskAPI(id) {
+    const response = await fetch(`${BASE_URL}/tasks/${id}/`);
+    const data = await response.json();
+    return data
+}
+
+function addTaskAPI(title, description, deadline) {
+    fetch(`${BASE_URL}/tasks/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description, deadline}),
+    })
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function editTaskAPI(id, title, description, deadline) {
+    fetch(`${BASE_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description, deadline}),
+    })
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function deleteTaskAPI(id) {
+    fetch(`${BASE_URL}/tasks/${id}/`, {
+        method: 'DELETE',
+    })
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+ async function displayTasks() {
     const taskList = document.getElementById('taskList');
     taskList.innerHTML = ''; // Clear existing tasks
+    tasks = await getTasksAPI();
+    console.log("line 133",tasks);
     tasks.forEach((task, index) => {
         const element = document.createElement('div');
         element.className = 'task';
@@ -95,29 +153,29 @@ function displayTasks() {
             <div class="task-header">Title: ${task.title}</div>
             <div>Description: ${task.description}</div>
             <div>Deadline: ${task.deadline}</div>
-            <button onclick="deleteTask(${index})">Delete</button>
-            <button onclick="editTask(${index})">Edit</button>
+            <button onclick="deleteTask(${task.id})">Delete</button>
         `;
         taskList.appendChild(element);
     });
 }
-
+// let data = getTasksAPI();
 function addTask(title, description, deadline) {
-    tasks.push({ title, description, deadline });
+    addTaskAPI(title, description, deadline);
     displayTasks();
 }
 
 function deleteTask(index) {
-    tasks.splice(index, 1);
+    deleteTaskAPI(index);
     displayTasks();
 }
 
 function editTask(index) {
-    const task = tasks[index];
+    const task = getOneTaskAPI(index);
     document.getElementById('title').value = task.title;
     document.getElementById('description').value = task.description;
     document.getElementById('deadline').value = task.deadline;
-    deleteTask(index); // Remove the task and then re-add it after editing
+    deleteTask(index);
+    displayTasks(); // Remove the task and then re-add it after editing
 }
 
 document.getElementById('taskForm').addEventListener('submit', function(e) {
