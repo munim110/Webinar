@@ -1,0 +1,1 @@
+This is a demo project for the free Backend Development career path on Interactive Cares.
